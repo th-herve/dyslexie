@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dyslexie</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="content">
+      <header>
+        <h1>Dyslexie</h1>
+      </header>
+      <main>
+        <article>
+          <p>
+            Une amie dyslexique m'a décrit son expérience de la lecture. Elle
+            <em>peut</em> lire, mais cela lui demande beaucoup de concentration
+            et les lettres semblent « sauter ».<br /><br />
+            Je me souvient avoir lu un article sur la
+            <a href="https://en.wikipedia.org/wiki/Typoglycemia">typoglycémie</a
+            >. Ne serait-il pas possible de le faire de manière interactive sur
+            un site web à l'aide de Javascript ? Bien sûr que oui.
+          </p>
+
+          <blockquote>
+            <p>
+              La dyslexie est un trouble de la lecture et de l’écriture
+              spécifique et durable qui apparaît chez l'enfant et l'adolescent
+              (certains auteurs l'appellent aussi dyslexie développementale). Le
+              trouble peut se traduire à des degrés divers par des difficultés à
+              épeler les mots, lire vite, écrire, lire à haute voix ou bien
+              comprendre ce qui est lu. La dyslexie est reconnue comme un
+              trouble spécifique du langage et des apprentissages (abrégé TSLA2)
+              et trouble en dys-.
+            </p>
+
+            <p>
+              La dyslexie est un trouble dont les causes ne sont pas
+              suffisamment éclaircies et qui fait l'objet de nombreuses études
+              et débats. Dans ce contexte, définir et diagnostiquer précisément
+              la dyslexie reste un sujet de controverse. La dyslexie est définie
+              à la fois par des résultats à des tests de lecture comparés aux
+              normes (points de vue psychométrique et cognitif) et par des
+              critères médicaux (diagnostic), comme un trouble spécifique qui
+              exclut les causes d'origine uniquement sensorielle (problème de
+              vue ou d'audition), uniquement contextuelle (sociale) ou
+              uniquement psychologique (affective). Des études en neurosciences
+              font l'hypothèse d'un trouble neurologique spécifique, dont
+              l'origine génétique est discutée.
+            </p>
+            <p>
+              Le diagnostic, d'ordre médical, se fait selon les critères précis
+              des classements de référence que sont la classification
+              internationale des maladies (CIM) et le manuel diagnostique et
+              statistique des troubles mentaux (DSM).
+            </p>
+          </blockquote>
+
+          <p>
+            <em
+              >Source:
+              <a href="https://fr.wikipedia.org/wiki/Dyslexie">Wikipedia</a></em
+            >
+          </p>
+
+          <p>
+            Traduction de cette
+            <a href="https://geon.github.io/programming/2016/03/03/dsxyliea"
+              >version</a
+            >
+          </p>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>
+
+<script
+  src="https://code.jquery.com/jquery-3.7.1.min.js"
+  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+  crossorigin="anonymous"
+></script>
+<script type="text/javascript">
+  "use strict";
+
+  $(function () {
+    var getTextNodesIn = function (el) {
+      return $(el)
+        .find(":not(iframe,script)")
+        .addBack()
+        .contents()
+        .filter(function () {
+          return this.nodeType == 3;
+        });
+    };
+
+    // var textNodes = getTextNodesIn($("p, h1, h2, h3"));
+    var textNodes = getTextNodesIn($("*"));
+
+    console.log(textNodes);
+
+    function isLetter(char) {
+      return /^[\d]$/.test(char);
+    }
+
+    var wordsInTextNodes = [];
+    for (var i = 0; i < textNodes.length; i++) {
+      var node = textNodes[i];
+
+      var words = [];
+
+      var re = /\w+/g;
+      var match;
+      while ((match = re.exec(node.nodeValue)) != null) {
+        var word = match[0];
+        var position = match.index;
+
+        words.push({
+          length: word.length,
+          position: position,
+        });
+      }
+
+      wordsInTextNodes[i] = words;
+    }
+
+    function messUpWords() {
+      for (var i = 0; i < textNodes.length; i++) {
+        var node = textNodes[i];
+
+        for (var j = 0; j < wordsInTextNodes[i].length; j++) {
+          // Only change a tenth of the words each round.
+          if (Math.random() > 1 / 10) {
+            continue;
+          }
+
+          var wordMeta = wordsInTextNodes[i][j];
+
+          var word = node.nodeValue.slice(
+            wordMeta.position,
+            wordMeta.position + wordMeta.length,
+          );
+          var before = node.nodeValue.slice(0, wordMeta.position);
+          var after = node.nodeValue.slice(wordMeta.position + wordMeta.length);
+
+          node.nodeValue = before + messUpWord(word) + after;
+        }
+      }
+    }
+
+    function messUpWord(word) {
+      if (word.length < 3) {
+        return word;
+      }
+
+      return (
+        word[0] + messUpMessyPart(word.slice(1, -1)) + word[word.length - 1]
+      );
+    }
+
+    function messUpMessyPart(messyPart) {
+      if (messyPart.length < 2) {
+        return messyPart;
+      }
+
+      var a, b;
+      while (!(a < b)) {
+        a = getRandomInt(0, messyPart.length - 1);
+        b = getRandomInt(0, messyPart.length - 1);
+      }
+
+      return (
+        messyPart.slice(0, a) +
+        messyPart[b] +
+        messyPart.slice(a + 1, b) +
+        messyPart[a] +
+        messyPart.slice(b + 1)
+      );
+    }
+
+    // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    setInterval(messUpWords, 50);
+  });
+
+  // https://geon.github.io/programming/2016/03/03/dsxyliea
+</script>
